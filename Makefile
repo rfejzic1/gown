@@ -1,6 +1,6 @@
 BINARY=gown
 BUILD_DIR=./build
-SRC=./main.go
+SRC=./cmd/cli/main.go
 
 all: build
 
