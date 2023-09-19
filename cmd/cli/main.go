@@ -15,9 +15,11 @@ func main() {
 	}
 
 	loader := gown.NewLoader(projectPath)
-	_, err := loader.LoadProject()
+	p, err := loader.LoadProject()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	gown.PrintProjectStructure(p, os.Stdout)
 }
