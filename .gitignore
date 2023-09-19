@@ -1,4 +1,5 @@
-build
-temp
-output
+/build
+/temp
+/output
+/gown
 

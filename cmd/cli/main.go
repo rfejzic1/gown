@@ -4,22 +4,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/rfejzic1/gown"
+	"github.com/rfejzic1/gown/cli"
 )
 
 func main() {
-	projectPath := "./output"
+	cli := cli.New()
 
-	if len(os.Args) > 1 {
-		projectPath = os.Args[1]
-	}
-
-	loader := gown.NewLoader(projectPath)
-	p, err := loader.LoadProject()
-
-	if err != nil {
+	if err := cli.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-
-	gown.PrintProjectStructure(p, os.Stdout)
 }
