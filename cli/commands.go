@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"github.com/rfejzic1/gown/command"
-	"github.com/rfejzic1/gown/loader"
+	"gown/command"
+	"gown/loader"
 	"github.com/urfave/cli/v2"
 )
 

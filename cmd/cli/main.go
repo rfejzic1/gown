@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/rfejzic1/gown/cli"
+	"gown/cli"
 )
 
 func main() {

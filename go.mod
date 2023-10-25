@@ -1,4 +1,4 @@
-module github.com/rfejzic1/gown
+module gown
 
 go 1.21.0
 

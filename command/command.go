@@ -1,6 +1,6 @@
 package command
 
-import "github.com/rfejzic1/gown/component"
+import "gown/component"
 
 type Command interface {
 	Execute(*component.Project) error

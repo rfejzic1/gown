@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/rfejzic1/gown/component"
+	"gown/component"
 )
 
 type directoryLoader struct {
