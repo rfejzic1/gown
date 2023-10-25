@@ -1,37 +1,37 @@
-package gown
+package component
 
 import "go/ast"
 
 type Project struct {
-	app *Application
+	App *Application
 }
 
 type Application struct {
-	modules []Module
-	files   []File
+	Modules []Module
+	Files   []File
 }
 
 func NewApplication(modules []Module, files []File) (*Application, error) {
 	return &Application{
-		modules: modules,
-		files:   files,
+		Modules: modules,
+		Files:   files,
 	}, nil
 }
 
 type Module struct {
-	name  string
-	files []File
+	Name string
+	File []File
 }
 
 func NewModule(name string, files []File) Module {
 	return Module{
-		name:  name,
-		files: files,
+		Name: name,
+		File: files,
 	}
 }
 
 type File struct {
-	path string
-	name string
-	node ast.Node
+	Path string
+	Name string
+	Node ast.Node
 }

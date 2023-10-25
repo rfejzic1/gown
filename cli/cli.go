@@ -10,10 +10,22 @@ type Cli struct {
 
 func New() Cli {
 	app := &cli.App{
-		Name:     "gown",
-		Usage:    "the framework with no magic",
-		Version:  VERSION,
-		Commands: []*cli.Command{},
+		Name:    "gown",
+		Usage:   "the framework with no magic",
+		Version: VERSION,
+		Commands: cli.Commands{
+			{
+				Name:  "add",
+				Usage: "add new component to project",
+				Subcommands: cli.Commands{
+					{
+						Name:   "module",
+						Usage:  "add new module to project",
+						Action: addModule,
+					},
+				},
+			},
+		},
 	}
 
 	return Cli{app}
