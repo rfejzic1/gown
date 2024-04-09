@@ -60,12 +60,12 @@ func (l *directoryLoader) loadApp() (*component.Application, error) {
 	}, nil
 }
 
-func (l *directoryLoader) loadPackage(packagePath ...string) ([]component.File, []string, error) {
+func (l *directoryLoader) loadPackage(packagePath ...string) ([]component.SourceFile, []string, error) {
 	pth := []string{l.projectPath}
 	pth = append(pth, packagePath...)
 	packageDir := path.Join(pth...)
 
-	files := []component.File{}
+	files := []component.SourceFile{}
 	subdirs := []string{}
 
 	entries, err := os.ReadDir(packageDir)
@@ -96,15 +96,15 @@ func (l *directoryLoader) loadPackage(packagePath ...string) ([]component.File, 
 	return files, subdirs, nil
 }
 
-func (l *directoryLoader) loadFile(packageDir string, fileName string) (component.File, error) {
+func (l *directoryLoader) loadFile(packageDir string, fileName string) (component.SourceFile, error) {
 	filePath := path.Join(packageDir, fileName)
 	node, err := parser.ParseFile(l.fset, filePath, nil, parser.ParseComments)
 
 	if err != nil {
-		return component.File{}, err
+		return component.SourceFile{}, err
 	}
 
-	return component.File{
+	return component.SourceFile{
 		Path: filePath,
 		Name: fileName,
 		Node: node,

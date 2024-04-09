@@ -1,17 +1,16 @@
 package component
 
-import "go/ast"
-
 type Project struct {
-	App *Application
+	App  *Application
+	Path string
 }
 
 type Application struct {
 	Modules []Module
-	Files   []File
+	Files   []SourceFile
 }
 
-func NewApplication(modules []Module, files []File) (*Application, error) {
+func NewApplication(modules []Module, files []SourceFile) (*Application, error) {
 	return &Application{
 		Modules: modules,
 		Files:   files,
@@ -20,18 +19,13 @@ func NewApplication(modules []Module, files []File) (*Application, error) {
 
 type Module struct {
 	Name string
-	File []File
+	File []SourceFile
 }
 
-func NewModule(name string, files []File) Module {
+func NewModule(name string, files []SourceFile) Module {
 	return Module{
 		Name: name,
 		File: files,
 	}
 }
 
-type File struct {
-	Path string
-	Name string
-	Node ast.Node
-}
