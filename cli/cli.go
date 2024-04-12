@@ -15,6 +15,11 @@ func New() Cli {
 		Version: VERSION,
 		Commands: cli.Commands{
 			{
+				Name:   "init",
+				Usage:  "initialize a new project",
+				Action: initialize,
+			},
+			{
 				Name:  "add",
 				Usage: "add new component to project",
 				Subcommands: cli.Commands{

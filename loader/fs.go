@@ -4,25 +4,25 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"gown/component"
 )
 
-type directoryLoader struct {
+type fsLoader struct {
 	projectPath string
 	fset        *token.FileSet
 }
 
-func NewDirectoryLoader(projectPath string) directoryLoader {
-	return directoryLoader{
-		projectPath: path.Clean(projectPath),
+func NewFsLoader(projectPath string) fsLoader {
+	return fsLoader{
+		projectPath: filepath.Clean(projectPath),
 		fset:        token.NewFileSet(),
 	}
 }
 
-func (l *directoryLoader) Load() (*component.Project, error) {
+func (l *fsLoader) Load() (*component.Project, error) {
 	app, err := l.loadApp()
 
 	if err != nil {
@@ -34,7 +34,7 @@ func (l *directoryLoader) Load() (*component.Project, error) {
 	}, nil
 }
 
-func (l *directoryLoader) loadApp() (*component.Application, error) {
+func (l *fsLoader) loadApp() (*component.Application, error) {
 	appFiles, subdirs, err := l.loadPackage("app")
 
 	if err != nil {
@@ -60,10 +60,10 @@ func (l *directoryLoader) loadApp() (*component.Application, error) {
 	}, nil
 }
 
-func (l *directoryLoader) loadPackage(packagePath ...string) ([]component.SourceFile, []string, error) {
+func (l *fsLoader) loadPackage(packagePath ...string) ([]component.SourceFile, []string, error) {
 	pth := []string{l.projectPath}
 	pth = append(pth, packagePath...)
-	packageDir := path.Join(pth...)
+	packageDir := filepath.Join(pth...)
 
 	files := []component.SourceFile{}
 	subdirs := []string{}
@@ -96,8 +96,8 @@ func (l *directoryLoader) loadPackage(packagePath ...string) ([]component.Source
 	return files, subdirs, nil
 }
 
-func (l *directoryLoader) loadFile(packageDir string, fileName string) (component.SourceFile, error) {
-	filePath := path.Join(packageDir, fileName)
+func (l *fsLoader) loadFile(packageDir string, fileName string) (component.SourceFile, error) {
+	filePath := filepath.Join(packageDir, fileName)
 	node, err := parser.ParseFile(l.fset, filePath, nil, parser.ParseComments)
 
 	if err != nil {
@@ -106,7 +106,6 @@ func (l *directoryLoader) loadFile(packageDir string, fileName string) (componen
 
 	return component.SourceFile{
 		Path: filePath,
-		Name: fileName,
 		Node: node,
 	}, nil
 }

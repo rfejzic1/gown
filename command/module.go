@@ -22,4 +22,3 @@ func (c *AddModule) Execute(p *component.Project) error {
 func (c *AddModule) Undo(p *component.Project) error {
 	return operation.DeletePackage(p, "app", c.Name)
 }
-

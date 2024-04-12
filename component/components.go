@@ -1,8 +1,9 @@
 package component
 
 type Project struct {
-	App  *Application
+	Name string
 	Path string
+	App  *Application
 }
 
 type Application struct {
@@ -28,4 +29,3 @@ func NewModule(name string, files []SourceFile) Module {
 		File: files,
 	}
 }
-
