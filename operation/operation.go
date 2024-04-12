@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"go/format"
 	"gown/component"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -111,8 +110,6 @@ func AppendToSource(f *component.SourceFile, content string) error {
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Formatted: %s", string(formatted))
 
 	_, err = f.File.Write(formatted)
 
