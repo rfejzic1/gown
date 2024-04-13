@@ -23,7 +23,7 @@ func (i *fsInitializer) Initialize() error {
 		Path: i.projectPath,
 	}
 
-	if err := operation.CreateDirectory(p); err != nil {
+	if _, err := operation.CreateDirectory(p); err != nil {
 		return err
 	}
 
@@ -39,11 +39,11 @@ func (i *fsInitializer) Initialize() error {
 		return err
 	}
 
-	if err := operation.CreateDirectory(p, "cmd"); err != nil {
+	if _, err := operation.CreateDirectory(p, "cmd"); err != nil {
 		return err
 	}
 
-	if _, err := operation.CreateEntrypoint(p, "cmd", i.projectName); err != nil {
+	if _, err := operation.CreatePackageMain(p, "cmd", i.projectName); err != nil {
 		return err
 	}
 

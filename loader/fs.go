@@ -98,7 +98,7 @@ func (l *fsLoader) loadPackage(packagePath ...string) ([]component.SourceFile, [
 
 func (l *fsLoader) loadFile(packageDir string, fileName string) (component.SourceFile, error) {
 	filePath := filepath.Join(packageDir, fileName)
-	node, err := parser.ParseFile(l.fset, filePath, nil, parser.ParseComments)
+	file, err := parser.ParseFile(l.fset, filePath, nil, parser.ParseComments)
 
 	if err != nil {
 		return component.SourceFile{}, err
@@ -106,6 +106,6 @@ func (l *fsLoader) loadFile(packageDir string, fileName string) (component.Sourc
 
 	return component.SourceFile{
 		Path: filePath,
-		Node: node,
+		File: file,
 	}, nil
 }

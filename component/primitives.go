@@ -2,17 +2,16 @@ package component
 
 import (
 	"go/ast"
-	"os"
 )
 
 type Package struct {
 	Projct *Project
 	Name   string
 	Path   string
+	Source *SourceFile
 }
 
 type SourceFile struct {
 	Path string
-	Node ast.Node
-	File *os.File
+	File *ast.File
 }
