@@ -4,6 +4,7 @@ import (
 	"gown/component"
 	"gown/operation"
 
+	"github.com/go-git/go-git/v5"
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -25,13 +26,6 @@ func (i *fsInitializer) Initialize() error {
 			Name: i.projectName,
 		},
 	}
-
-	// glob, err := fs.Glob(files, "files/*")
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// log.Printf("GLOB: %v", glob)
 
 	p := &component.Project{
 		Config: config,
@@ -70,6 +64,10 @@ func (i *fsInitializer) Initialize() error {
 		return err
 	}
 
+	if err := i.gitInit(p); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -87,4 +85,32 @@ func (i *fsInitializer) writeStaticFiles(p *component.Project) error {
 	return renderFiles(p, func(fileName string, content []byte) error {
 		return operation.WriteFile(p, content, fileName)
 	})
+}
+
+func (i *fsInitializer) gitInit(p *component.Project) error {
+	opt := &git.PlainInitOptions{}
+	repo, err := git.PlainInitWithOptions(p.Path, opt)
+
+	if err != nil {
+		return err
+	}
+
+	w, err := repo.Worktree()
+
+	if err != nil {
+		return err
+	}
+
+	if err := w.AddGlob("*"); err != nil {
+		return err
+	}
+
+	commitOpts := &git.CommitOptions{}
+	_, err = w.Commit("Initial commit", commitOpts)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
