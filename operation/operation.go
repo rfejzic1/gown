@@ -58,10 +58,23 @@ func CreatePackage(p *component.Project, packagePath ...string) (*component.Pack
 
 // Creates a package "main" that is executable.
 func CreatePackageMain(p *component.Project, packagePath ...string) (*component.Package, error) {
-	pkg, err := CreatePackage(p, packagePath...)
+	relPath, err := CreateDirectory(p, packagePath...)
 
 	if err != nil {
 		return nil, err
+	}
+
+	packageName := filepath.Base(relPath)
+
+	pkg := &component.Package{
+		Projct: p,
+		Name:   packageName,
+		Path:   relPath,
+	}
+
+	source := &ast.File{
+		Name:  ast.NewIdent("main"),
+		Decls: []ast.Decl{},
 	}
 
 	mainDecl := &ast.FuncDecl{
@@ -73,17 +86,9 @@ func CreatePackageMain(p *component.Project, packagePath ...string) (*component.
 		Body: &ast.BlockStmt{},
 	}
 
-	source := pkg.Source.File
-
-	source.Name = ast.NewIdent("main")
-
-	if source.Decls == nil {
-		source.Decls = []ast.Decl{}
-	}
-
 	source.Decls = append(source.Decls, mainDecl)
 
-	sourceFile, err := WriteSourceFile(p, pkg.Source.File, pkg.Path, pkg.Name)
+	sourceFile, err := WriteSourceFile(p, source, pkg.Path, "main")
 
 	if err != nil {
 		return nil, err

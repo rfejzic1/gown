@@ -1,9 +1,10 @@
 package initializer
 
 import (
-	"github.com/pelletier/go-toml/v2"
 	"gown/component"
 	"gown/operation"
+
+	"github.com/pelletier/go-toml/v2"
 )
 
 type fsInitializer struct {
@@ -25,12 +26,23 @@ func (i *fsInitializer) Initialize() error {
 		},
 	}
 
+	// glob, err := fs.Glob(files, "files/*")
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// log.Printf("GLOB: %v", glob)
+
 	p := &component.Project{
 		Config: config,
 		Path:   i.projectPath,
 	}
 
 	if _, err := operation.CreateDirectory(p); err != nil {
+		return err
+	}
+
+	if err := i.writeStaticFiles(p); err != nil {
 		return err
 	}
 
@@ -54,7 +66,7 @@ func (i *fsInitializer) Initialize() error {
 		return err
 	}
 
-	if _, err := operation.CreatePackageMain(p, "cmd", i.projectName); err != nil {
+	if _, err := operation.CreatePackageMain(p, "cmd", "web"); err != nil {
 		return err
 	}
 
@@ -69,4 +81,10 @@ func (i *fsInitializer) writeConfig(p *component.Project, cfg *component.Config)
 	}
 
 	return operation.WriteFile(p, cfgContent, "gown.toml")
+}
+
+func (i *fsInitializer) writeStaticFiles(p *component.Project) error {
+	return renderFiles(p, func(fileName string, content []byte) error {
+		return operation.WriteFile(p, content, fileName)
+	})
 }
