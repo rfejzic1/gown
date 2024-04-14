@@ -1,9 +1,9 @@
 package component
 
 type Project struct {
-	Name string
-	Path string
-	App  *Application
+	Config Config
+	Path   string
+	App    *Application
 }
 
 type Application struct {

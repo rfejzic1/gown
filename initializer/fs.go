@@ -1,6 +1,7 @@
 package initializer
 
 import (
+	"github.com/pelletier/go-toml/v2"
 	"gown/component"
 	"gown/operation"
 )
@@ -18,12 +19,22 @@ func NewFsInitializer(projectName string, projectPath string) fsInitializer {
 }
 
 func (i *fsInitializer) Initialize() error {
+	config := component.Config{
+		Project: component.ConfigProject{
+			Name: i.projectName,
+		},
+	}
+
 	p := &component.Project{
-		Name: i.projectName,
-		Path: i.projectPath,
+		Config: config,
+		Path:   i.projectPath,
 	}
 
 	if _, err := operation.CreateDirectory(p); err != nil {
+		return err
+	}
+
+	if err := i.writeConfig(p, &config); err != nil {
 		return err
 	}
 
@@ -48,4 +59,14 @@ func (i *fsInitializer) Initialize() error {
 	}
 
 	return nil
+}
+
+func (i *fsInitializer) writeConfig(p *component.Project, cfg *component.Config) error {
+	cfgContent, err := toml.Marshal(cfg)
+
+	if err != nil {
+		return err
+	}
+
+	return operation.WriteFile(p, cfgContent, "gown.toml")
 }

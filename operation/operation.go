@@ -12,6 +12,11 @@ import (
 const filePermission = 0744
 const dirPermission = 0755
 
+// TODO: Create a gown.toml (or other config) file to store information about the project
+//		 Create builder functions and query functions to search and manipulate the AST
+//		 Create helper functons to create arbitrary source files (such as air.toml or .gitingore or .Makerile or README.md)
+//		 Create go.mod file at the root of the project
+
 // Creates a directory with the given path relative to the project.
 func CreateDirectory(p *component.Project, dirPath ...string) (string, error) {
 	relPath := filepath.Join(dirPath...)
@@ -117,4 +122,18 @@ func WriteSourceFile(p *component.Project, source *ast.File, filePath ...string)
 		Path: relPath,
 		File: source,
 	}, nil
+}
+
+func WriteFile(p *component.Project, content []byte, filePath ...string) error {
+	relPath := filepath.Join(filePath...)
+	fullPath := filepath.Join(p.Path, relPath)
+
+	file, err := os.OpenFile(fullPath, os.O_RDWR|os.O_CREATE, filePermission)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(content)
+	return err
 }
