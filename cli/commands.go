@@ -30,7 +30,13 @@ func addModule(ctx *cli.Context) error {
 		Name: "sample",
 	}
 
-	loader := loader.NewFsLoader("./")
+	cwd, err := os.Getwd()
+
+	if err != nil {
+		return err
+	}
+
+	loader := loader.NewFsLoader(cwd)
 	project, err := loader.Load()
 
 	if err != nil {

@@ -1,111 +1,149 @@
 package loader
 
 import (
-	"go/parser"
-	"go/token"
+	"fmt"
+	"gown/component"
+	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
-	"gown/component"
+	"github.com/pelletier/go-toml/v2"
+	"golang.org/x/tools/go/packages"
 )
 
 type fsLoader struct {
 	projectPath string
-	fset        *token.FileSet
+	cfg         *packages.Config
 }
 
 func NewFsLoader(projectPath string) fsLoader {
+	cfg := &packages.Config{
+		Mode: packages.NeedFiles | packages.NeedSyntax | packages.NeedName | packages.NeedModule | packages.NeedCompiledGoFiles,
+	}
+
 	return fsLoader{
 		projectPath: filepath.Clean(projectPath),
-		fset:        token.NewFileSet(),
+		cfg:         cfg,
 	}
 }
 
 func (l *fsLoader) Load() (*component.Project, error) {
-	app, err := l.loadApp()
+	cfg, err := l.loadConfig(l.projectPath)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &component.Project{
-		App: app,
-	}, nil
-}
+	project := component.NewProject(l.projectPath, cfg)
 
-func (l *fsLoader) loadApp() (*component.Application, error) {
-	appFiles, subdirs, err := l.loadPackage("app")
+	pkgs, err := packages.Load(l.cfg, "./...")
 
 	if err != nil {
 		return nil, err
 	}
 
-	modules := []component.Module{}
+	if packages.PrintErrors(pkgs) > 0 {
+		return nil, fmt.Errorf("errors occured while parsing packages")
+	}
 
-	for _, dirname := range subdirs {
-		files, _, err := l.loadPackage("app", dirname)
+	for i := range pkgs {
+		pkg := pkgs[i]
 
-		if err != nil {
-			return nil, err
+		packagePathParts := strings.Split(pkg.PkgPath, "/")
+		packagePath := path.Join(packagePathParts[1:]...)
+
+		if packageMatch(packagePath, "app") {
+			fmt.Printf("handle 'app' package\n")
+			project.Application.Sources = l.loadCompiledSources(pkg)
+		} else if packageMatch(packagePath, "app/*") {
+			fmt.Printf("handle '%s' package [module]\n", packagePath)
+
+			module := component.Module{
+				Name:    pkg.Name,
+				Sources: l.loadCompiledSources(pkg),
+			}
+
+			project.Application.AddModule(module)
+		} else if packageMatch(packagePath, "setup") {
+			fmt.Printf("handle 'setup' package\n")
+
+			project.Setup = &component.Setup{
+				Sources: l.loadCompiledSources(pkg),
+			}
+		} else if packageMatch(packagePath, "web") {
+			fmt.Printf("handle 'web' package\n")
+
+			project.Web = &component.Web{
+				Sources: l.loadCompiledSources(pkg),
+			}
+		} else if packageMatch(packagePath, "cmd/*") {
+			fmt.Printf("handle '%s' package [command]\n", packagePath)
+
+			cmd := component.Command{
+				Sources: l.loadCompiledSources(pkg),
+			}
+
+			project.AddCommand(cmd)
+		} else {
+			fmt.Printf("unhadnled '%s' package\n", packagePath)
 		}
 
-		module := component.NewModule(dirname, files)
-		modules = append(modules, module)
+		fmt.Println()
 	}
 
-	return &component.Application{
-		Modules: modules,
-		Files:   appFiles,
-	}, nil
+	return project, nil
 }
 
-func (l *fsLoader) loadPackage(packagePath ...string) ([]component.SourceFile, []string, error) {
-	pth := []string{l.projectPath}
-	pth = append(pth, packagePath...)
-	packageDir := filepath.Join(pth...)
-
-	files := []component.SourceFile{}
-	subdirs := []string{}
-
-	entries, err := os.ReadDir(packageDir)
+func packageMatch(packagePath string, pattern string) bool {
+	match, err := path.Match(pattern, packagePath)
 
 	if err != nil {
-		return nil, nil, err
+		log.Fatalf("invalid path match pattern: %s", err)
 	}
 
-	for _, entry := range entries {
-		if entry.IsDir() {
-			subdirs = append(subdirs, entry.Name())
+	return match
+}
+
+func (l *fsLoader) loadCompiledSources(pkg *packages.Package) []component.SourceFile {
+	sources := []component.SourceFile{}
+
+	fmt.Printf("loading sources...\n")
+
+	for i, pth := range pkg.CompiledGoFiles {
+		rel, err := filepath.Rel(l.projectPath, pth)
+
+		if err != nil {
+			log.Printf("failed to resolve relative path for file: %s", pth)
 			continue
 		}
 
-		isGoFile := entry.Type().IsRegular() && strings.HasSuffix(entry.Name(), ".go")
-
-		if isGoFile {
-			file, err := l.loadFile(packageDir, entry.Name())
-
-			if err != nil {
-				return nil, nil, err
-			}
-
-			files = append(files, file)
+		source := component.SourceFile{
+			Path: rel,
+			File: pkg.Syntax[i],
 		}
+		sources = append(sources, source)
+		fmt.Printf("loaded file: %s\n", source.Path)
 	}
 
-	return files, subdirs, nil
+	return sources
 }
 
-func (l *fsLoader) loadFile(packageDir string, fileName string) (component.SourceFile, error) {
-	filePath := filepath.Join(packageDir, fileName)
-	file, err := parser.ParseFile(l.fset, filePath, nil, parser.ParseComments)
+func (l *fsLoader) loadConfig(projectPath string) (component.Config, error) {
+	var cfg component.Config
+
+	path := filepath.Join(projectPath, "gown.toml")
+
+	content, err := os.ReadFile(path)
 
 	if err != nil {
-		return component.SourceFile{}, err
+		return component.Config{}, err
 	}
 
-	return component.SourceFile{
-		Path: filePath,
-		File: file,
-	}, nil
+	if err := toml.Unmarshal(content, &cfg); err != nil {
+		return component.Config{}, err
+	}
+
+	return cfg, nil
 }
