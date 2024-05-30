@@ -30,6 +30,11 @@ func New() Cli {
 					},
 				},
 			},
+			{
+				Name:   "cover",
+				Usage:  "interactive mode",
+				Action: cover,
+			},
 		},
 	}
 
